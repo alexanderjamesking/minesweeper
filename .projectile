@@ -1,0 +1,6 @@
+-/.cljs_rhino_repl
+-/.git
+-.nrepl-port
+-/out
+-/target
+-/resources/public/cljs
