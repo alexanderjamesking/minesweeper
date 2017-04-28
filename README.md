@@ -1,4 +1,4 @@
-# ClojureScript Sample project with Figwheel, DevCards, Unit Tests with Phantom JS, and Browser REPL in Cider
+# Minesweeper
 
 ## Starting Fighweel
 
