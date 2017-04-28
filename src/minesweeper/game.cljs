@@ -1,6 +1,6 @@
 (ns minesweeper.game)
 
-(defn empty-board [size]
+(defn- empty-board [size]
   (into {} (mapcat
             (fn [k]
               (assoc {} (:key k) k))
@@ -12,7 +12,7 @@
                :state :unrevealed
                :type nil}))))
 
-(defn place-mines [board num-mines]
+(defn- place-mines [board num-mines]
   (merge board (->> board
                     keys
                     shuffle
@@ -48,3 +48,8 @@
     (->> (mapcat replace-type-with-num-adj-mines tiles-without-mines)
          (into {})
          (merge board))))
+
+(defn init-board [size number-of-mines]
+  (-> (empty-board size)
+      (place-mines number-of-mines)
+      label-tiles-with-adjacent-mines))

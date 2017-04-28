@@ -1,10 +1,8 @@
 (ns minesweeper.core
   (:require [reagent.core :as reagent]
-            [minesweeper.app :as app]))
+            [minesweeper.view :as view]))
 
-(defn main []
-  (enable-console-print!)
-  (println "Hello, World!"))
+(enable-console-print!)
 
-(reagent/render-component [app/hello-world]
+(reagent/render-component [view/render-board]
                           (. js/document (getElementById "app")))
