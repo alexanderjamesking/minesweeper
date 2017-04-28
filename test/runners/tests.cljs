@@ -1,2 +1,3 @@
 (ns runners.tests
-  (:require [minesweeper.app-test]))
+  (:require [minesweeper.app-test]
+            [minesweeper.game-test]))
