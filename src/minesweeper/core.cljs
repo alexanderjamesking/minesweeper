@@ -4,5 +4,5 @@
 
 (enable-console-print!)
 
-(reagent/render-component [view/render-board]
+(reagent/render-component [view/render-game]
                           (. js/document (getElementById "app")))

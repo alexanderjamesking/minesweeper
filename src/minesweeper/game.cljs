@@ -53,3 +53,6 @@
   (-> (empty-board size)
       (place-mines number-of-mines)
       label-tiles-with-adjacent-mines))
+
+(defn reveal-all [board]
+  (reduce-kv (fn [m k v] (assoc m k (assoc v :state :revealed))) {} board))
