@@ -64,7 +64,8 @@
   (let [tile (get board tile-key)
         adjacent-tiles (select-keys board
                                     (adjacent-tiles-coordinates (:x tile) (:y tile)))
-        to-reveal (filter (fn [[k v]] (and (not= :mine (get v :type))
+        to-reveal (filter (fn [[k v]] (and (= :0 (:type tile))
+                                           (not= :mine (get v :type))
                                            (= :unrevealed (get v :state))))
                           adjacent-tiles)]
     to-reveal))

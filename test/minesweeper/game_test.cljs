@@ -88,22 +88,37 @@
       (view/render-board (game/reveal-all board))
       [:span " "]
       (view/render-board board)
-      [:p "After clicking on the bottom right tile"]
+      [:p "After clicking on the bottom right tile:"]
       (view/render-board board-revealed)])))
 
 
 (defcard board-with-three-mines-reveal-empty-space
   (let [board (->> (empty-board 5)
                    (place-mine-at 0 0)
-                   (place-mine-at 3 3)
                    (place-mine-at 3 4)
                    (label-tiles-with-adjacent-mines))
-        board-revealed (game/reveal-adjacent-empty-tiles board "2,2")]
+        board-revealed (game/reveal-adjacent-empty-tiles board "4,0")]
     (reagent/as-element
      [:div
       [:p "Before: (revealed board and actual board)"]
       (view/render-board (game/reveal-all board))
       [:span " "]
       (view/render-board board)
-      [:p "After clicking on 2,2: "]
+      [:p "After clicking the last tile on the right on the first row:"]
       (view/render-board board-revealed)])))
+
+(deftest board-with-three-mines-reveal-empty-space-test
+  (let [board (->> (empty-board 5)
+                   (place-mine-at 0 0)
+                   (place-mine-at 3 4)
+                   (label-tiles-with-adjacent-mines))
+        board-revealed (game/reveal-adjacent-empty-tiles board "4,0")
+        tile-state (fn [k] (:state (get board-revealed k)))]
+
+    (is (= :unrevealed (tile-state "0,0")))
+    (is (= :revealed (tile-state "0,1")))
+    (is (= :revealed (tile-state "0,2")))
+    (is (= :revealed (tile-state "0,3")))
+    (is (= :revealed (tile-state "0,4")))
+    (is (= :unrevealed (tile-state "3,4")))
+    (is (= :unrevealed (tile-state "4,4")))))

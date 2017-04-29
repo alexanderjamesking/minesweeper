@@ -142,8 +142,10 @@
 (defn click-handler [k]
   (let [state (-> app-state deref)
         clicked-tile (get-in state [:board k])
-        _ (println clicked-tile)
-        current (assoc-in state [:board k :state] :revealed)]
+        current (if (= :0 (:type clicked-tile))
+                  {:board (game/reveal-adjacent-empty-tiles (:board state) (:key clicked-tile))}
+
+                  (assoc-in state [:board k :state] :revealed))]
 
     ;; check tile type
     ;; if its a mine - they lose
