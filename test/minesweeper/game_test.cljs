@@ -1,11 +1,13 @@
 (ns minesweeper.game-test
   (:require [cljs.test :refer-macros [is testing async]]
-            [devcards.core :refer-macros [deftest]]
-            [minesweeper.game :refer [empty-board
-                                      place-mines
-                                      count-adjacent-mines
-                                      label-tiles-with-adjacent-mines
-                                      init-board]]))
+            [devcards.core :refer-macros [deftest defcard]]
+            [minesweeper.game :as game :refer [empty-board
+                                               place-mines
+                                               count-adjacent-mines
+                                               label-tiles-with-adjacent-mines
+                                               init-board]]
+            [minesweeper.view :as view]
+            [reagent.core :as reagent]))
 
 (deftest create-empty-board
   (testing "Initialise an empty board with all tiles unrevealed"
@@ -74,3 +76,34 @@
         tiles-with-mines (filter (fn [[k v]] (= (:type v) :mine)) board)]
     (is (= 81 (count board)))
     (is (= 20 (count tiles-with-mines)))))
+
+(defcard board-with-single-mine-reveal-empty-space
+  (let [board (->> (empty-board 3)
+                   (place-mine-at 0 0)
+                   (label-tiles-with-adjacent-mines))
+        board-revealed (game/reveal-adjacent-empty-tiles board "2,2")]
+    (reagent/as-element
+     [:div
+      [:p "Before: (revealed board and actual board)"]
+      (view/render-board (game/reveal-all board))
+      [:span " "]
+      (view/render-board board)
+      [:p "After clicking on the bottom right tile"]
+      (view/render-board board-revealed)])))
+
+
+(defcard board-with-three-mines-reveal-empty-space
+  (let [board (->> (empty-board 5)
+                   (place-mine-at 0 0)
+                   (place-mine-at 3 3)
+                   (place-mine-at 3 4)
+                   (label-tiles-with-adjacent-mines))
+        board-revealed (game/reveal-adjacent-empty-tiles board "2,2")]
+    (reagent/as-element
+     [:div
+      [:p "Before: (revealed board and actual board)"]
+      (view/render-board (game/reveal-all board))
+      [:span " "]
+      (view/render-board board)
+      [:p "After clicking on 2,2: "]
+      (view/render-board board-revealed)])))

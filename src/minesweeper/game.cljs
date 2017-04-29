@@ -56,3 +56,28 @@
 
 (defn reveal-all [board]
   (reduce-kv (fn [m k v] (assoc m k (assoc v :state :revealed))) {} board))
+
+
+
+
+(defn get-adj-tiles-to-reveal [board tile-key]
+  (let [tile (get board tile-key)
+        adjacent-tiles (select-keys board
+                                    (adjacent-tiles-coordinates (:x tile) (:y tile)))
+        to-reveal (filter (fn [[k v]] (and (not= :mine (get v :type))
+                                           (= :unrevealed (get v :state))))
+                          adjacent-tiles)]
+    to-reveal))
+
+(defn reveal-adjacent-empty-tiles [board tile-key]
+  (loop [tile-key tile-key
+         to-reveal (get-adj-tiles-to-reveal board tile-key)
+         new-state (assoc-in board [tile-key :state] :revealed)]
+    (if (empty? to-reveal)
+      new-state
+      (let [next-tile (second (first to-reveal))
+            next-key (:key next-tile)
+            next-to-reveal (set (concat (rest to-reveal)
+                                        (get-adj-tiles-to-reveal new-state next-key)))
+            next-state (assoc-in new-state [tile-key :state] :revealed)]
+        (recur next-key next-to-reveal next-state)))))
