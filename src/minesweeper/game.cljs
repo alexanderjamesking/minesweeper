@@ -2,8 +2,7 @@
 
 (defn- empty-board [size]
   (into {} (mapcat
-            (fn [k]
-              (assoc {} (:key k) k))
+            (fn [k] (assoc {} (:key k) k))
             (for [x (range size)
                   y (range size)]
               {:key (str x "," y)
@@ -18,22 +17,18 @@
                     shuffle
                     (take num-mines)
                     (select-keys board)
-                    (mapcat (fn [[k v]] (assoc {} k (assoc v :type :mine))))
-                    (into {}))))
-
-(defn- n [x y] [x (dec y)])
-(defn- ne [x y] [(inc x) (dec y)])
-(defn- e [x y] [(inc x) y])
-(defn- se [x y] [(inc x) (inc y)])
-(defn- s [x y] [x (inc y)])
-(defn- sw [x y] [(dec x) (inc y)])
-(defn- w [x y] [(dec x) y])
-(defn- nw [x y] [(dec x) (dec y)])
+                    (reduce-kv (fn [m k v] (assoc m k (assoc v :type :mine))) {}))))
 
 (defn- adjacent-tiles-coordinates [x y]
-  (let [generate-coords (juxt n ne e se s sw w nw)
-        coords (generate-coords x y)]
-    (map (fn [[x y]] (str x "," y)) coords)))
+  (let [generate-coords (juxt (fn north [x y] [x (dec y)])
+                              (fn north-east [x y] [(inc x) (dec y)])
+                              (fn east [x y] [(inc x) y])
+                              (fn south-east [x y] [(inc x) (inc y)])
+                              (fn south [x y] [x (inc y)])
+                              (fn south-west [x y] [(dec x) (inc y)])
+                              (fn west [x y] [(dec x) y])
+                              (fn north-west [x y] [(dec x) (dec y)]))]
+    (map (fn [[x y]] (str x "," y)) (generate-coords x y))))
 
 (defn- count-adjacent-mines [x y board]
   (let [adj-tiles (select-keys board (adjacent-tiles-coordinates x y))
@@ -56,9 +51,6 @@
 
 (defn reveal-all [board]
   (reduce-kv (fn [m k v] (assoc m k (assoc v :state :revealed))) {} board))
-
-
-
 
 (defn get-adj-tiles-to-reveal [board tile-key]
   (let [tile (get board tile-key)
