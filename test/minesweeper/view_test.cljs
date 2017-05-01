@@ -6,6 +6,12 @@
             [minesweeper.game :as game]
             [minesweeper.view :as view]))
 
+(defcard smileys
+  (reagent/as-element [:div
+                       (view/smiley)
+                       (view/sad)
+                       (view/cool)]))
+
 (def board-for-testing
   {"0,0" {:type :1    :x 0 :y 0 :state :revealed}
    "1,0" {:type :2    :x 1 :y 0 :state :revealed}

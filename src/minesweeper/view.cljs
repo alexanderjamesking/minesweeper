@@ -172,12 +172,92 @@
 (defn reveal-all []
   (reset! app-state {:board (game/reveal-all (-> app-state deref :board))}))
 
+(defn smiley []
+  (let [size 100]
+    [:svg {:width size :height size}
+
+     [:rect {:fill "#D7DBDD"
+             :width size
+             :height size}]
+
+     [:circle {:fill "#F1C40F"
+               :stroke "#000000"
+               :stroke-width 2
+               :cx (/ size 2) :cy (/ size 2) :r (/ size 3)}]
+
+     [:circle {:fill "#000000"
+               :cx 40 :cy 40 :r 6}]
+
+     [:circle {:fill "#000000"
+               :cx 60 :cy 40 :r 6}]
+
+     [:path {:d "M30 56 C 35 78, 65 78, 70 56"
+             :stroke "#000000"
+             :stroke-width 3
+             :fill "transparent"}]]))
+
+(defn sad []
+  (let [size 100]
+    [:svg {:width size :height size}
+
+     [:rect {:fill "#D7DBDD"
+             :width size
+             :height size}]
+
+     [:circle {:fill "#F1C40F"
+               :stroke "#000000"
+               :stroke-width 2
+               :cx (/ size 2) :cy (/ size 2) :r (/ size 3)}]
+
+     [:line {:x1 35 :y1 35 :x2 45 :y2 45 :stroke-width 3 :stroke "black"}]
+     [:line {:x1 45 :y1 35 :x2 35 :y2 45 :stroke-width 3 :stroke "black"}]
+
+     [:line {:x1 55 :y1 35 :x2 65 :y2 45 :stroke-width 3 :stroke "black"}]
+     [:line {:x1 65 :y1 35 :x2 55 :y2 45 :stroke-width 3 :stroke "black"}]
+
+     [:path {:d "M30 66 C 35 54, 65 54, 70 66"
+             :stroke "#000000"
+             :stroke-width 3
+             :fill "transparent"}]]))
+
+(defn cool []
+  (let [size 100]
+    [:svg {:width size :height size}
+
+     [:rect {:fill "#D7DBDD"
+             :width size
+             :height size}]
+
+     [:circle {:fill "#F1C40F"
+               :stroke "#000000"
+               :stroke-width 2
+               :cx (/ size 2)
+               :cy (/ size 2)
+               :r (/ size 3)}]
+
+     ;; shades
+     [:path {:d "M28 36 C 28 58, 50 56, 50 36"}]
+     [:path {:d "M72 36 C 72 58, 50 56, 50 36"}]
+     [:line {:x1 28 :y1 36 :x2 72 :y2 36 :stroke-width 3 :stroke "black"}]
+     [:polygon {:points "18,40 17,43 29,40 28,35 " :fill "black"}]
+     [:polygon {:points "82,40 83,43 71,40 72,35 " :fill "black"}]
+
+     [:path {:d "M30 56 C 35 78, 65 78, 70 56"
+             :stroke "#000000"
+             :stroke-width 3
+             :fill "transparent"}]]))
+
 (defn render-game []
   [:div
    [:button {:on-click reset-game} "reset"]
    [:button {:on-click reveal-all} "reveal all"]
 
    [:h2 (str "Game state: " (-> app-state deref :game-state))]
+
+   (case (-> app-state deref :game-state)
+     :in-progress [smiley]
+     :lost [sad]
+     :won [cool])
 
    [:div
     (render-board (-> app-state deref :board) (= :in-progress (-> app-state deref :game-state)))]])
