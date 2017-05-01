@@ -56,6 +56,12 @@
 (defn reveal-all [board]
   (reduce-kv (fn [m k v] (assoc-in m [k :state] :revealed)) board board))
 
+(defn reveal-all-mines [board]
+  (reduce-kv (fn [m k v]
+               (if (= :mine (:type v))
+                 (assoc-in m [k :state] :revealed)
+                 (assoc m k v))) board board))
+
 (defn- get-adj-tiles-to-reveal [board tile-key]
   (let [tile (get board tile-key)]
     (->> (select-keys board (adjacent-tiles-coordinates (:x tile) (:y tile)))
@@ -76,3 +82,37 @@
                                         (get-adj-tiles-to-reveal new-state next-key)))
             next-state (assoc-in new-state [tile-key :state] :revealed)]
         (recur next-key next-to-reveal next-state)))))
+
+(defn all-non-mine-tiles-revealed? [game-state]
+  (let [non-mines (filter (fn [[k v]] (not= :mine (:type v)) ) (-> game-state deref :board))
+        unrevealed-count (count (filter (fn [[k v]] (= :unrevealed (:state v))) non-mines))]
+    (= 0 unrevealed-count)))
+
+(defn game-lost [game-state tile-key]
+  (swap! game-state assoc :board (reveal-all-mines (-> game-state deref :board)))
+  (swap! game-state assoc-in [:board tile-key :state] :lost)
+  (swap! game-state assoc :game-state :lost))
+
+(defn toggle-flag! [game-state tile-key]
+  (let [state (-> game-state deref)
+        current-tile-state (get-in state [:board tile-key :state])
+        new-state (if (= :unrevealed current-tile-state)
+                    :flagged
+                    :unrevealed)]
+    (swap! game-state assoc-in [:board tile-key :state] new-state)))
+
+(defn reveal-tile! [game-state tile-key]
+  (let [state (-> game-state deref)
+        clicked-tile (get-in state [:board tile-key])
+        reveal-tiles (fn []
+                       (swap! game-state assoc :board (reveal-adjacent-empty-tiles (:board @game-state) tile-key))
+                       (when (true? (all-non-mine-tiles-revealed? game-state))
+                         (swap! game-state assoc :game-state :won)))]
+    (case (:type clicked-tile)
+      :0 (reveal-tiles)
+      :mine (game-lost game-state tile-key)
+      (reveal-tiles))))
+
+(defn create-new-game-state [board-size number-of-mines]
+  {:board (init-board board-size number-of-mines)
+   :game-state :in-progress})

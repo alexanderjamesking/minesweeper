@@ -24,14 +24,16 @@
    "2,3" {:type :0    :x 2 :y 3 :state :revealed}
    "3,3" {:type :0    :x 3 :y 3 :state :revealed}})
 
+(def clicking-enabled true)
+
 (defcard board-with-all-tile-states
-  (reagent/as-element (view/render-board board-for-testing)))
+  (reagent/as-element (view/render-board board-for-testing clicking-enabled)))
 
 (defcard random-board-with-twelve-mines-revealed
   (let [board (->> (game/init-board 9 12)
                    (game/reveal-all))]
-    (reagent/as-element (view/render-board board))))
+    (reagent/as-element (view/render-board board clicking-enabled))))
 
 (defcard random-board-with-twelve-mines-unrevealed
   (let [board (->> (game/init-board 9 12))]
-    (reagent/as-element (view/render-board board))))
+    (reagent/as-element (view/render-board board clicking-enabled))))

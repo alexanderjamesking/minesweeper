@@ -2,11 +2,11 @@
   (:require [minesweeper.game :as game]
             [reagent.core :as reagent :refer [atom]]))
 
-(defn initial-app-state []
-  {:board (game/init-board 9 10)})
+(def board-size 9)
+(def number-of-mines 10)
 
 (defonce app-state
-  (atom (initial-app-state)))
+  (atom (game/create-new-game-state board-size number-of-mines)))
 
 (def rect-size 50)
 (def rect-stroke 1)
@@ -70,11 +70,7 @@
                        :fill (get number-to-colour tile-type)} (name tile-type)])]
     [:g border inner-rect text]))
 
-(defn render-tile [tile]
-  (reagent/as-element [:svg {:width rect-size :height rect-size}
-                       (revealed tile)]))
-
-(defn unrevealed []
+(defn unrevealed [clicking-enabled?]
   (let [inner-rect-padding 3
         inner-rect-size (- rect-size (* inner-rect-padding 2))
         triangle-size (- rect-size 1)
@@ -82,8 +78,8 @@
                                  :points (str "1," triangle-size " " triangle-size ",1 1,1")}]
         triangle-right [:polygon {:style {:fill "#979A9A"}
                                   :points (str triangle-size ",1 1," triangle-size " " triangle-size "," triangle-size)}]
-        inner-rect [:rect {:style {:fill "#D0D3D4"
-                                   :cursor "pointer"}
+        inner-rect [:rect {:style (merge {:fill "#D0D3D4"}
+                                         (when clicking-enabled? {:cursor "pointer"}))
                            :width inner-rect-size
                            :height inner-rect-size
                            :x inner-rect-padding
@@ -139,46 +135,49 @@
                         :cursor "pointer"}
                 :points "17,20 29,13 29,27"}]]))
 
-(defn click-handler [k]
-  (let [state (-> app-state deref)
-        clicked-tile (get-in state [:board k])
-        current (if (= :0 (:type clicked-tile))
-                  {:board (game/reveal-adjacent-empty-tiles (:board state) (:key clicked-tile))}
+(defn left-click-handler [tile-key]
+  (game/reveal-tile! app-state tile-key))
 
-                  (assoc-in state [:board k :state] :revealed))]
+(defn right-click-handler [tile-key click-event]
+  (game/toggle-flag! app-state tile-key)
+  (.preventDefault click-event))
 
-    ;; check tile type
-    ;; if its a mine - they lose
-    ;; if it's :0 then reveal surrounding tiles
-
-    (reset! app-state current)))
-
-(defn render-board [board]
+(defn render-board [board clicking-enabled?]
   (let [board-size (* rect-size (Math/sqrt (count board)))]
     [:svg {:width board-size :height board-size}
      (map (fn [[k v]]
             (let [x (:x v)
                   y (:y v)
+                  state (:state v)
                   transform (str "translate(" (* rect-size x) "," (* rect-size y) ")")]
-              [:g {:transform transform
-                   :key k
-                   :on-click (partial click-handler k)
-                   }
-
+              [:g (merge  {:transform transform
+                           :key k}
+                          (if (or (= :flagged state) (= :unrevealed state))
+                            {:on-context-menu (partial right-click-handler k)}
+                            {:on-context-menu #(.preventDefault %)}) ; no right click for revealed tiles
+                          ;; no left click for flagged tiles
+                          (when (and clicking-enabled? (not= :flagged state))
+                            {:on-click (partial left-click-handler k)}))
                (case (:state v)
                  :revealed (case (:type v)
                              :mine (mine)
                              (revealed (:type v)))
-                 :unrevealed (unrevealed)
+                 :unrevealed (unrevealed clicking-enabled?)
                  :flagged (flagged)
-                 :lost (mine-lost))]))
-          board)]))
+                 :lost (mine-lost))])) board)]))
+
+(defn reset-game []
+  (reset! app-state (game/create-new-game-state board-size number-of-mines)))
+
+(defn reveal-all []
+  (reset! app-state {:board (game/reveal-all (-> app-state deref :board))}))
 
 (defn render-game []
   [:div
-   [:button {:on-click #(reset! app-state (initial-app-state))} "reset"]
-   [:button {:on-click #(reset! app-state {:board (game/reveal-all (-> app-state deref :board))})} "reveal all"]
+   [:button {:on-click reset-game} "reset"]
+   [:button {:on-click reveal-all} "reveal all"]
+
+   [:h2 (str "Game state: " (-> app-state deref :game-state))]
 
    [:div
-    (render-board (-> app-state deref :board))
-    ]])
+    (render-board (-> app-state deref :board) (= :in-progress (-> app-state deref :game-state)))]])
