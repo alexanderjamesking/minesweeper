@@ -4,13 +4,14 @@
             [minesweeper.game :refer [init-board]]
             [reagent.core :as reagent]
             [minesweeper.game :as game]
+            [minesweeper.graphics :as graphics]
             [minesweeper.view :as view]))
 
 (defcard smileys
   (reagent/as-element [:div
-                       (view/smiley)
-                       (view/sad)
-                       (view/cool)]))
+                       (graphics/smiley)
+                       (graphics/sad)
+                       (graphics/cool)]))
 
 (def board-for-testing
   {"0,0" {:type :1    :x 0 :y 0 :state :revealed}

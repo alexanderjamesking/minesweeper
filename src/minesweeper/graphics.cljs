@@ -1,0 +1,205 @@
+(ns minesweeper.graphics)
+
+(def rect-size 50)
+
+(def rect-stroke 1)
+
+(def number-to-colour
+  {:1 "#2980B9"
+   :2 "#27AE60"
+   :3 "#C0392B"
+   :4 "purple"
+   :5 "#BA4A00"
+   :6 "#52BE80"
+   :7 "#117A65"
+   :8 "#D35400"})
+
+(defn mine-svg [fill]
+  (let [inner-rect-size (- rect-size (* rect-stroke 2))
+        border [:rect {:style {:fill "#D7DBDD"}
+                       :width rect-size
+                       :height rect-size}]
+        inner-rect [:rect {:style {:fill fill}
+                           :width inner-rect-size
+                           :height inner-rect-size
+                           :x rect-stroke
+                           :y rect-stroke}]]
+    [:g
+     border
+     inner-rect
+     [:line {:x1 25 :y1 7 :x2 25 :y2 42 :stroke-width 3 :stroke "black"}]
+     [:line {:x1 7 :y1 25 :x2 42 :y2 25 :stroke-width 3 :stroke "black"}]
+     [:line {:x1 12 :y1 12 :x2 37 :y2 37 :stroke-width 3 :stroke "black"}]
+     [:line {:x1 37 :y1 12 :x2 12 :y2 37 :stroke-width 3 :stroke "black"}]
+     [:circle {:cx 25 :cy 25 :r 12}]
+     [:circle {:style {:fill "white"} :cx 22 :cy 22 :r 3}]]))
+
+(defn mine []
+  (mine-svg "#E5E8E8"))
+
+(defn mine-lost []
+  (mine-svg "red"))
+
+(defn revealed [tile-type]
+  (let [inner-rect-size (- rect-size (* rect-stroke 2))
+        border [:rect {:style {:fill "#D7DBDD"}
+                       :width rect-size
+                       :height rect-size}]
+        inner-rect [:rect {:style {:fill "#E5E8E8"}
+                           :width inner-rect-size
+                           :height inner-rect-size
+                           :x rect-stroke
+                           :y rect-stroke}]
+        text (case tile-type
+               :0 nil
+               [:text {:style {:user-select "none"
+                               :cursor "default"
+                               :font-family "Helvetica, Arial"
+                               :font-weight 300}
+                       :x 17
+                       :y 35
+                       :text-length 5
+                       :font-size 26
+                       :fill (get number-to-colour tile-type)} (name tile-type)])]
+    [:g border inner-rect text]))
+
+(defn unrevealed [clicking-enabled?]
+  (let [inner-rect-padding 3
+        inner-rect-size (- rect-size (* inner-rect-padding 2))
+        triangle-size (- rect-size 1)
+        triangle-left [:polygon {:style {:fill "#E5E7E9"}
+                                 :points (str "1," triangle-size " " triangle-size ",1 1,1")}]
+        triangle-right [:polygon {:style {:fill "#979A9A"}
+                                  :points (str triangle-size ",1 1," triangle-size " " triangle-size "," triangle-size)}]
+        inner-rect [:rect {:style (merge {:fill "#D0D3D4"}
+                                         (when clicking-enabled? {:cursor "pointer"}))
+                           :width inner-rect-size
+                           :height inner-rect-size
+                           :x inner-rect-padding
+                           :y inner-rect-padding}]
+        border [:rect {:style {:fill "#D7DBDD"}
+                       :width rect-size
+                       :height rect-size}]]
+    [:g border triangle-left triangle-right inner-rect]))
+
+(defn flagged []
+  (let [inner-rect-padding 3
+        inner-rect-size (- rect-size (* inner-rect-padding 2))
+        triangle-size (- rect-size 1)
+        triangle-left [:polygon {:style {:fill "#E5E7E9"
+                                         :cursor "pointer"}
+                                 :points (str "1," triangle-size " " triangle-size ",1 1,1")}]
+        triangle-right [:polygon {:style {:fill "#979A9A"
+                                          :cursor "pointer"}
+                                  :points (str triangle-size ",1 1," triangle-size " " triangle-size "," triangle-size)}]
+
+        inner-rect [:rect {:style {:fill "#D0D3D4"
+                                   :cursor "pointer"}
+                           :width inner-rect-size
+                           :height inner-rect-size
+                           :x inner-rect-padding
+                           :y inner-rect-padding}]
+
+        border [:rect {:style {:fill "#D7DBDD"}
+                       :width rect-size
+                       :height rect-size}]]
+    [:g
+     border
+     triangle-left
+     triangle-right
+     inner-rect
+     [:rect {:style {:fill "black"
+                     :cursor "pointer"}
+             :x 29
+             :y 14
+             :width 3
+             :height 24}]
+     [:rect {:style {:fill "black"
+                     :cursor "pointer"}
+             :x 25
+             :y 36
+             :height 3
+             :width 10}]
+     [:polygon {:style {:fill "#D30831"
+                        :cursor "pointer"}
+                :points "15,20 32,10 32,30"}]
+
+     [:polygon {:style {:fill "#E20934"
+                        :cursor "pointer"}
+                :points "17,20 29,13 29,27"}]]))
+
+
+(defn smiley []
+  (let [size 100]
+    [:svg {:width size :height size}
+
+     [:rect {:fill "#FFFFFF"
+             :width size
+             :height size}]
+
+     [:circle {:fill "#F1C40F"
+               :stroke "#000000"
+               :stroke-width 2
+               :cx (/ size 2) :cy (/ size 2) :r (/ size 3)}]
+
+     [:circle {:fill "#000000"
+               :cx 40 :cy 40 :r 6}]
+
+     [:circle {:fill "#000000"
+               :cx 60 :cy 40 :r 6}]
+
+     [:path {:d "M30 56 C 35 78, 65 78, 70 56"
+             :stroke "#000000"
+             :stroke-width 3
+             :fill "transparent"}]]))
+
+(defn sad []
+  (let [size 100]
+    [:svg {:width size :height size}
+
+     [:rect {:fill "#FFFFFF"
+             :width size
+             :height size}]
+
+     [:circle {:fill "#F1C40F"
+               :stroke "#000000"
+               :stroke-width 2
+               :cx (/ size 2) :cy (/ size 2) :r (/ size 3)}]
+
+     [:line {:x1 35 :y1 35 :x2 45 :y2 45 :stroke-width 3 :stroke "black"}]
+     [:line {:x1 45 :y1 35 :x2 35 :y2 45 :stroke-width 3 :stroke "black"}]
+
+     [:line {:x1 55 :y1 35 :x2 65 :y2 45 :stroke-width 3 :stroke "black"}]
+     [:line {:x1 65 :y1 35 :x2 55 :y2 45 :stroke-width 3 :stroke "black"}]
+
+     [:path {:d "M30 66 C 35 54, 65 54, 70 66"
+             :stroke "#000000"
+             :stroke-width 3
+             :fill "transparent"}]]))
+
+(defn cool []
+  (let [size 100]
+    [:svg {:width size :height size}
+
+     [:rect {:fill "#FFFFFF"
+             :width size
+             :height size}]
+
+     [:circle {:fill "#F1C40F"
+               :stroke "#000000"
+               :stroke-width 2
+               :cx (/ size 2)
+               :cy (/ size 2)
+               :r (/ size 3)}]
+
+     ;; shades
+     [:path {:d "M28 36 C 28 58, 50 56, 50 36"}]
+     [:path {:d "M72 36 C 72 58, 50 56, 50 36"}]
+     [:line {:x1 28 :y1 36 :x2 72 :y2 36 :stroke-width 3 :stroke "black"}]
+     [:polygon {:points "18,40 17,43 29,40 28,35 " :fill "black"}]
+     [:polygon {:points "82,40 83,43 71,40 72,35 " :fill "black"}]
+
+     [:path {:d "M30 56 C 35 78, 65 78, 70 56"
+             :stroke "#000000"
+             :stroke-width 3
+             :fill "transparent"}]]))
