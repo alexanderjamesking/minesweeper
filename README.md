@@ -1,5 +1,10 @@
 # Minesweeper
 
+A basic implementation of Minesweeper in ClojureScript
+
+![minesweeper](minesweeper.png)
+
+
 ## Starting Fighweel
 
 Run Cider Jack-In Clojurescript "C-c M-J"
