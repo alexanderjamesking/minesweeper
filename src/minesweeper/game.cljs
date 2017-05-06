@@ -1,4 +1,5 @@
-(ns minesweeper.game)
+(ns minesweeper.game
+  (:require [clojure.set :refer [difference]]))
 
 (defn- empty-board [size]
   (into {} (mapcat
@@ -53,6 +54,9 @@
       (place-mines number-of-mines)
       label-tiles-with-adjacent-mines))
 
+(defn unreveal-all [board]
+  (reduce-kv (fn [m k v] (assoc-in m [k :state] :unrevealed)) board board))
+
 (defn reveal-all [board]
   (reduce-kv (fn [m k v] (assoc-in m [k :state] :revealed)) board board))
 
@@ -68,20 +72,25 @@
          (filter (fn [[k v]]
                    (and (= :0 (:type tile))
                         (not= :mine (get v :type))
-                        (= :unrevealed (get v :state))))))))
+                        (= :unrevealed (get v :state)))))
+         (map first))))
 
 (defn reveal-adjacent-empty-tiles [board tile-key]
   (loop [tile-key tile-key
          to-reveal (get-adj-tiles-to-reveal board tile-key)
-         new-state (assoc-in board [tile-key :state] :revealed)]
-    (if (empty? to-reveal)
-      new-state
-      (let [next-tile (second (first to-reveal))
-            next-key (:key next-tile)
-            next-to-reveal (set (concat (rest to-reveal)
-                                        (get-adj-tiles-to-reveal new-state next-key)))
-            next-state (assoc-in new-state [tile-key :state] :revealed)]
-        (recur next-key next-to-reveal next-state)))))
+         board board
+         revealed #{}]
+    (let [board (assoc-in board [tile-key :state] :revealed)
+          revealed (conj revealed tile-key)]
+      (if (empty? to-reveal)
+        board
+        (let [next-key (first to-reveal)
+              next-to-reveal (set (concat (rest to-reveal)
+                                          (get-adj-tiles-to-reveal board next-key)))]
+          (recur next-key
+                 next-to-reveal
+                 board
+                 revealed))))))
 
 (defn all-non-mine-tiles-revealed? [game-state]
   (let [non-mines (filter (fn [[k v]] (not= :mine (:type v)) ) (-> game-state deref :board))

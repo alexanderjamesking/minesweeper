@@ -86,10 +86,11 @@
     (is (= 20 (count tiles-with-mines)))))
 
 (defcard board-with-single-mine-reveal-empty-space
-  (let [board (->> (game/empty-board 3)
+  (let [board (->> (game/empty-board 9)
                    (place-mine-at 0 0)
                    (game/label-tiles-with-adjacent-mines))
-        board-revealed (game/reveal-adjacent-empty-tiles board "2,2")]
+        board-revealed (game/reveal-adjacent-empty-tiles board "8,8")
+        assert-revealed (fn [k] (is (= :revealed (:state (get board-revealed k)))))]
     (reagent/as-element
      [:div
       [:p "Before: (revealed board and actual board)"]
@@ -97,7 +98,11 @@
       [:span " "]
       (view/render-board board clicking-enabled)
       [:p "After clicking on the bottom right tile:"]
-      (view/render-board board-revealed clicking-enabled)])))
+
+      (view/render-board board-revealed clicking-enabled)
+
+      (assert-revealed "1,3")
+      (assert-revealed "3,0")])))
 
 (deftest board-with-single-mine-reveal-empty-space-test
   (testing "Clicking on an empty square reveals all adjacent empty squares"

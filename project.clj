@@ -13,8 +13,7 @@
                    :source-paths ["src" "dev"]}}
   :clean-targets ^{:protect false} [:target-path "out" "resources/public/cljs"]
   :figwheel { :css-dirs ["resources/public/css"]}
-  :cljsbuild {;;:test-commands {"testy" ["lein" "doo" "phantom" "test" "once"]}
-              :builds [{:id "dev"
+  :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src" "dev"]
                         :figwheel true
                         :compiler {:main minesweeper.core
