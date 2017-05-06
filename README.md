@@ -2,7 +2,8 @@
 
 A basic implementation of Minesweeper in ClojureScript
 
-![minesweeper](minesweeper.png)
+<img src="minesweeper.png" width="455" />
+
 
 
 ## Starting Fighweel
